@@ -1,0 +1,4 @@
+{
+  "123456789": { "ad": "Örnek Admin", "aktif": true, "kalan_kredi": 9999, "bitis": "2099-12-31" },
+  "987654321": { "ad": "Örnek Müşteri", "aktif": true, "kalan_kredi": 25, "bitis": "2026-11-24" }
+}

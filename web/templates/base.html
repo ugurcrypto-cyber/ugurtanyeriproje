@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block baslik %}Isı Kaybı Otomasyonu{% endblock %}</title>
+{% block head %}{% endblock %}
+<style>
+  *{box-sizing:border-box} body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;background:#f3f5f8;color:#1c2330}
+  header{background:#17324d;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header a{color:#fff;text-decoration:none;opacity:.9} header .sag{margin-left:auto;display:flex;gap:12px;align-items:center}
+  main{max-width:1080px;margin:24px auto;padding:0 16px}
+  .kart{background:#fff;border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .ozet-izgara{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0}
+  .ozet-kutu{background:#f3f7fb;border:1px solid #d6e2f0;border-radius:8px;padding:12px;text-align:center}
+  .ozet-kutu .deger{font-size:20px;font-weight:700;color:#17324d;display:block;margin-top:4px}
+  .tablo-sarici{overflow-x:auto}
+  .indir-liste{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+  h1{font-size:22px;margin:0 0 14px} h2{font-size:17px;margin:0 0 10px}
+  label{display:block;margin:12px 0 4px;font-weight:600;font-size:14px}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{width:100%;padding:9px;border:1px solid #c5cdd8;border-radius:6px;font-size:15px}
+  button,.dugme{background:#1f6fb2;color:#fff;border:0;border-radius:6px;padding:9px 16px;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+  button.ikincil{background:#6b7785} table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #e3e8ef;vertical-align:top}
+  .mesaj{padding:10px 14px;border-radius:6px;margin-bottom:12px}.mesaj.hata{background:#fde8e8;color:#8a1c1c}.mesaj.ok{background:#e4f6e8;color:#1b5e2b}
+  .rozet{padding:2px 8px;border-radius:10px;font-size:12px;background:#e3e8ef}.rozet.tamam{background:#d8f0dd}.rozet.hata{background:#fbd9d9}.rozet.isleniyor,.rozet.kuyrukta{background:#fff0c9}
+  .ince{color:#5b6675;font-size:13px} pre{white-space:pre-wrap;background:#f3f5f8;padding:10px;border-radius:6px}
+  form.satir{display:inline}
+</style>
+</head>
+<body>
+<header>
+  <strong>Isı Kaybı Otomasyonu</strong>
+  {% if kullanici %}<a href="{{ url_for('panel') }}">Panelim</a><a href="{{ url_for('yeni') }}">Yeni proje</a>
+  {% if kullanici['rol'] == 'admin' %}<a href="{{ url_for('admin') }}">Yönetim</a>{% endif %}
+  <span class="sag"><span class="ince" style="color:#cfe0f0">{{ kullanici['ad'] }}</span>
+    <form method="post" action="{{ url_for('cikis') }}" class="satir">{{ csrf_input() }}<button class="ikincil" type="submit">Çıkış</button></form></span>
+  {% else %}<span class="sag"><a href="{{ url_for('giris') }}">Giriş</a><a href="{{ url_for('kayit') }}">Üye ol</a></span>{% endif %}
+</header>
+<main>
+  {% with m = get_flashed_messages(with_categories=true) %}{% for kat, t in m %}<div class="mesaj {{ kat }}">{{ t }}</div>{% endfor %}{% endwith %}
+  {% block icerik %}{% endblock %}
+</main>
+</body>
+</html>

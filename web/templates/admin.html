@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block baslik %}Yönetim{% endblock %}
+{% block icerik %}
+<div class="kart">
+  <h1>Üyeler</h1>
+  <p class="ince">"Paket varsayılanlarını uygula" işaretliyse hak ve bitiş tarihi paketten gelir. İşaretli değilse aşağıdaki değerler elle kaydedilir.</p>
+  <table>
+    <tr><th>Üye</th><th>Paket</th><th>Hak</th><th>Bitiş</th><th>Aktif</th><th>İş</th><th></th></tr>
+    {% for k in kullanicilar %}
+    <tr>
+      <form method="post" action="{{ url_for('admin_kullanici', kid=k['id']) }}">{{ csrf_input() }}
+      <td>{{ k['ad'] }}<br><span class="ince">{{ k['eposta'] }}{% if k['rol'] == 'admin' %} · yönetici{% endif %}</span></td>
+      <td><select name="paket"><option value="">Yok</option>{% for kod, p in PAKETLER.items() %}<option value="{{ kod }}" {{ 'selected' if k['paket']==kod }}>{{ p['ad'] }}</option>{% endfor %}</select>
+          <label style="font-weight:400"><input type="checkbox" name="varsayilan" value="1"> varsayılanları uygula</label></td>
+      <td><input type="number" name="hak" min="0" value="{{ k['hak'] }}" style="width:80px"></td>
+      <td><input type="date" name="bitis" value="{{ k['bitis'] or '' }}"></td>
+      <td><input type="checkbox" name="aktif" value="1" {{ 'checked' if k['aktif'] }}></td>
+      <td>{{ k['is_sayisi'] }}</td>
+      <td><button type="submit">Kaydet</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

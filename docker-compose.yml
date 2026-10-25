@@ -1,0 +1,33 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      - ADMIN_EPOSTA=${ADMIN_EPOSTA:-admin@ugurtanyeriproje.com}
+      - ADMIN_SIFRE=${ADMIN_SIFRE}
+      - MAX_YUKLEME_MB=${MAX_YUKLEME_MB:-300}
+      - SAKLAMA_GUN=${SAKLAMA_GUN:-7}
+      - GUVENLI_CEREZ=${GUVENLI_CEREZ:-1}
+    volumes:
+      - veri:/veri
+    expose:
+      - "8080"
+
+  # Otomatik HTTPS (Let's Encrypt) - ugurtanyeriproje.com ve www.ugurtanyeriproje.com
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - ALAN_ADI=${ALAN_ADI:-ugurtanyeriproje.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_veri:/data
+    depends_on:
+      - web
+
+volumes:
+  veri:
+  caddy_veri:

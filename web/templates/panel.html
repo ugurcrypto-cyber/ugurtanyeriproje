@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block baslik %}Panelim{% endblock %}
+{% block icerik %}
+<div class="kart">
+  <h1>Üyeliğim</h1>
+  <table>
+    <tr><th>Paket</th><td>{{ PAKET_ADI }}</td><th>Kalan hak</th><td>{{ kullanici['hak'] }}</td><th>Bitiş</th><td>{{ kullanici['bitis'] or '-' }}</td></tr>
+  </table>
+  {% if uyelik_ok %}<p><a class="dugme" href="{{ url_for('yeni') }}">Yeni proje yükle</a></p>
+  {% else %}<p class="mesaj hata">{{ uyelik_mesaj }}</p>{% endif %}
+</div>
+<div class="kart">
+  <h2>Projelerim</h2>
+  {% if isler %}
+  <table>
+    <tr><th>Proje</th><th>Tarih</th><th>Durum</th><th></th></tr>
+    {% for i in isler %}
+    <tr><td>{{ i['ad'] }}</td><td>{{ i['olusturma'] }}</td>
+      <td><span class="rozet {{ i['durum'] }}">{{ {'kuyrukta':'Sırada','isleniyor':'İşleniyor','tamam':'Hazır','hata':'Hata','silindi':'Silindi'}.get(i['durum'], i['durum']) }}</span></td>
+      <td><a href="{{ url_for('is_detay', is_id=i['id']) }}">Aç</a></td></tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="ince">Henüz proje yüklemediniz.</p>{% endif %}
+</div>
+{% endblock %}

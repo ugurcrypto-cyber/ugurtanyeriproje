@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block baslik %}Yeni proje{% endblock %}
+{% block icerik %}
+<div class="kart">
+  <h1>Yeni proje yükle</h1>
+  <p class="ince">Yalnızca <strong>DXF</strong> kabul edilir (DWG için AutoCAD'de "Farklı kaydet → DXF"). Mahal kodlarının yazılı olduğu çizimi ve mimari çizimi birlikte yükleyebilirsiniz.</p>
+  <form method="post" action="{{ url_for('yeni') }}" enctype="multipart/form-data">{{ csrf_input() }}
+    <label for="proje_adi">Proje adı</label>
+    <input id="proje_adi" type="text" name="proje_adi" maxlength="80" value="{{ f.get('proje_adi','') }}" required>
+
+    <h2 style="margin-top:20px">1. Bina fonksiyonu ve yön referansı</h2>
+    <label for="bina_fonksiyonu">Bina fonksiyonu</label>
+    <select id="bina_fonksiyonu" name="bina_fonksiyonu" required>
+      {% for k, v in BINA_FONKSIYONU.items() %}
+        <option value="{{ k }}" {{ 'selected' if f.get('bina_fonksiyonu', 'konut')==k }}>{{ v }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="yon_referansi">Otomatik yön tayin referansı (Pusula)</label>
+    <select id="yon_referansi" name="yon_referansi" required>
+      {% for k, v in YON_REFERANSI.items() %}
+        <option value="{{ k }}" {{ 'selected' if f.get('yon_referansi', 'yukari_kuzey')==k }}>{{ v }}</option>
+      {% endfor %}
+    </select>
+    <p class="ince" style="margin-top:4px">Seçilen referansa göre pencereler (DPK, DPB, DPD, DPG), dış kapılar (DK), daire giriş kapıları (İK) ve cephe yönleri otomatik tayin edilir.</p>
+
+    <h2 style="margin-top:20px">2. Kat, döşeme ve hibrit tavan/taban tanımı</h2>
+    <label for="kat_sayisi">Bina kaç katlı? (zemin dahil)</label>
+    <input id="kat_sayisi" type="number" name="kat_sayisi" min="1" max="40" value="{{ f.get('kat_sayisi','') }}" required>
+
+    <label for="doseme">Ana döşeme kuralı (Plak Döşeme / Asmolen Döşeme)</label>
+    <select id="doseme" name="doseme" required>
+      {% for k, v in DOSEME.items() %}
+        <option value="{{ k }}" {{ 'selected' if f.get('doseme', 'plak')==k }}>{{ v }}</option>
+      {% endfor %}
+    </select>
+    <p class="ince" style="margin-top:4px">Plak döşemede TO1/TG1/CC1/CA2 grubu ve DH3 kiriş aktiftir. Asmolen döşemede TO2/TG2/CC2/CA3 grubu aktiftir ve DH3 = 0.00 pasiftir.</p>
+
+    <label style="margin-top:14px;display:block;font-weight:600">Aktif Isı Kaybı Bileşenleri (Tek Tek Seçilebilir Duvar / Tavan / Taban Kodları)</label>
+    <p class="ince" style="margin-top:2px;margin-bottom:8px">Hesaplamada dikkate alınmasını istediğiniz bileşenleri aşağıdan tek tek tikleyebilirsiniz. Algoritma doğrudan seçtiğiniz kutulara odaklanır:</p>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button type="button" class="ikincil-dugme" id="preset_plak" style="padding:5px 10px;font-size:12px;cursor:pointer">Plak Döşeme Grubu (TO1)</button>
+      <button type="button" class="ikincil-dugme" id="preset_asmolen" style="padding:5px 10px;font-size:12px;cursor:pointer">Asmolen Döşeme Grubu (TO2)</button>
+      <button type="button" class="ikincil-dugme" id="preset_karma" style="padding:5px 10px;font-size:12px;cursor:pointer">Karma: Zemin Plak (TO1) + Üst Asmolen (TO2)</button>
+      <button type="button" class="ikincil-dugme" id="preset_tumu" style="padding:5px 10px;font-size:12px;cursor:pointer">Tümünü Seç</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px">
+      <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;background:#f8fafc">
+        <strong style="display:block;margin-bottom:6px;color:#0f172a">🧱 Duvar, Kolon ve Kiriş</strong>
+        {% for kod in ['DH1', 'DH2', 'DH3', 'DT1', 'DO1'] %}
+          {% set b = BILESEN_SECENEKLERI[kod] %}
+          <label style="display:flex;align-items:center;gap:8px;font-weight:normal;margin:5px 0;cursor:pointer">
+            <input type="checkbox" name="aktif_bilesenler" value="{{ kod }}" data-kod="{{ kod }}" style="width:auto;margin:0" {{ 'checked' if kod in secili_bilesenler }}>
+            <span>{{ b['ad'] }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;background:#f8fafc">
+        <strong style="display:block;margin-bottom:6px;color:#0f172a">🏠 Tavan / Çatı (Plak & Asmolen)</strong>
+        {% for kod in ['CC1', 'CC2', 'CA1', 'CA2', 'CA3'] %}
+          {% set b = BILESEN_SECENEKLERI[kod] %}
+          <label style="display:flex;align-items:center;gap:8px;font-weight:normal;margin:5px 0;cursor:pointer">
+            <input type="checkbox" name="aktif_bilesenler" value="{{ kod }}" data-kod="{{ kod }}" style="width:auto;margin:0" {{ 'checked' if kod in secili_bilesenler }}>
+            <span>{{ b['ad'] }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;background:#f8fafc">
+        <strong style="display:block;margin-bottom:6px;color:#0f172a">📐 Taban / Döşeme (Plak & Asmolen)</strong>
+        {% for kod in ['TT1', 'TO1', 'TO2', 'TG1', 'TG2'] %}
+          {% set b = BILESEN_SECENEKLERI[kod] %}
+          <label style="display:flex;align-items:center;gap:8px;font-weight:normal;margin:5px 0;cursor:pointer">
+            <input type="checkbox" name="aktif_bilesenler" value="{{ kod }}" data-kod="{{ kod }}" style="width:auto;margin:0" {{ 'checked' if kod in secili_bilesenler }}>
+            <span>{{ b['ad'] }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <details style="margin-bottom:14px">
+      <summary style="cursor:pointer;font-size:13px;color:#475569">Gelişmiş: Genel Son Kat Tavanı ve Zemin Tabanı Varsayılan Seçimi (İsteğe Bağlı)</summary>
+      <div style="margin-top:8px">
+        <label for="ust_tavan">Son kat tavanı (CA1 / CA2 / CA3 / CC1 / CC2)</label>
+        <select id="ust_tavan" name="ust_tavan">
+          <option value="">Tiklenen kutulardan otomatik belirle</option>
+          {% for k, v in UST_TAVAN.items() %}
+            <option value="{{ k }}" {{ 'selected' if f.get('ust_tavan')==k }}>{{ v }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="zemin_taban">Zemin / alt kat tabanı (TO1 / TO2 / TG1 / TG2 / TT1)</label>
+        <select id="zemin_taban" name="zemin_taban">
+          <option value="">Tiklenen kutulardan otomatik belirle</option>
+          {% for k, v in ZEMIN_TABAN.items() %}
+            <option value="{{ k }}" {{ 'selected' if f.get('zemin_taban')==k }}>{{ v }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </details>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px">
+      <label for="aciklama" style="margin:0">Ek açıklama (isteğe bağlı)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" id="mikrofon_btn" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          🎤 Sesli Komut ile Yaz
+        </button>
+        <span id="ses_durum" class="ince" style="font-size:12px;color:#dc2626;display:none">Dinleniyor...</span>
+      </div>
+    </div>
+    <textarea id="aciklama" name="aciklama" rows="3" maxlength="500" placeholder="Örn: Bodrum kat, zemin kat dükkan (plak döşeme TO1), 1. ve 2. kat asmolen döşeme (TO2), çatı katı CA1...">{{ f.get('aciklama','') }}</textarea>
+
+    <label for="dosyalar">DXF dosyaları</label>
+    <input id="dosyalar" type="file" name="dosyalar" accept=".dxf" multiple required>
+    <p><button type="submit">Yükle ve hesapla</button></p>
+  </form>
+</div>
+
+<script>
+(function() {
+  function kutulariAyarla(kodListesi) {
+    var set = {};
+    for (var i = 0; i < kodListesi.length; i++) set[kodListesi[i]] = true;
+    var cbs = document.querySelectorAll('input[name="aktif_bilesenler"]');
+    for (var j = 0; j < cbs.length; j++) {
+      cbs[j].checked = !!set[cbs[j].value];
+    }
+  }
+
+  var dosemeSel = document.getElementById('doseme');
+  if (dosemeSel) {
+    dosemeSel.addEventListener('change', function() {
+      var v = dosemeSel.value;
+      if (v === 'plak' || v === 'diger') {
+        kutulariAyarla(['DH1', 'DH2', 'DH3', 'DO1', 'CC1', 'CA1', 'TO1']);
+      } else if (v === 'asmolen') {
+        kutulariAyarla(['DH1', 'DH2', 'DO1', 'CC2', 'CA1', 'CA3', 'TO2']);
+      } else if (v === 'karma') {
+        kutulariAyarla(['DH1', 'DH2', 'DO1', 'CC2', 'CA1', 'CA3', 'TO1', 'TO2']);
+      }
+    });
+  }
+
+  var btnPlak = document.getElementById('preset_plak');
+  if (btnPlak) btnPlak.addEventListener('click', function() {
+    if (dosemeSel) dosemeSel.value = 'plak';
+    kutulariAyarla(['DH1', 'DH2', 'DH3', 'DO1', 'CC1', 'CA1', 'CA2', 'TO1', 'TG1']);
+  });
+
+  var btnAsmolen = document.getElementById('preset_asmolen');
+  if (btnAsmolen) btnAsmolen.addEventListener('click', function() {
+    if (dosemeSel) dosemeSel.value = 'asmolen';
+    kutulariAyarla(['DH1', 'DH2', 'DO1', 'CC2', 'CA1', 'CA3', 'TO2', 'TG2']);
+  });
+
+  var btnKarma = document.getElementById('preset_karma');
+  if (btnKarma) btnKarma.addEventListener('click', function() {
+    if (dosemeSel) dosemeSel.value = 'karma';
+    kutulariAyarla(['DH1', 'DH2', 'DO1', 'CC2', 'CA1', 'CA3', 'TO1', 'TO2', 'TG2']);
+  });
+
+  var btnTumu = document.getElementById('preset_tumu');
+  if (btnTumu) btnTumu.addEventListener('click', function() {
+    var cbs = document.querySelectorAll('input[name="aktif_bilesenler"]');
+    for (var j = 0; j < cbs.length; j++) cbs[j].checked = true;
+  });
+
+  // Web Speech API - Sesli Komut Özelliği (KURAL 5)
+  var mikBtn = document.getElementById('mikrofon_btn');
+  var sesDurum = document.getElementById('ses_durum');
+  var aciklamaEl = document.getElementById('aciklama');
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (mikBtn && aciklamaEl) {
+    if (!SpeechRecognition) {
+      mikBtn.addEventListener('click', function() {
+        alert('Tarayıcınız Web Speech API sesli komut özelliğini desteklemiyor. Lütfen Google Chrome veya Microsoft Edge kullanın.');
+      });
+    } else {
+      var rec = new SpeechRecognition();
+      rec.lang = 'tr-TR';
+      rec.continuous = true;
+      rec.interimResults = false;
+      var aktifMi = false;
+
+      rec.onstart = function() {
+        aktifMi = true;
+        mikBtn.textContent = '⏹️ Dinlemeyi Durdur';
+        mikBtn.style.background = '#0f172a';
+        if (sesDurum) {
+          sesDurum.textContent = '🔴 Dinleniyor... Konuşabilirsiniz';
+          sesDurum.style.display = 'inline';
+        }
+      };
+
+      rec.onend = function() {
+        aktifMi = false;
+        mikBtn.textContent = '🎤 Sesli Komut ile Yaz';
+        mikBtn.style.background = '#dc2626';
+        if (sesDurum) sesDurum.style.display = 'none';
+      };
+
+      rec.onerror = function() {
+        aktifMi = false;
+        mikBtn.textContent = '🎤 Sesli Komut ile Yaz';
+        mikBtn.style.background = '#dc2626';
+        if (sesDurum) {
+          sesDurum.textContent = 'Mikrofon erişimi sağlanamadı.';
+          sesDurum.style.display = 'inline';
+        }
+      };
+
+      rec.onresult = function(event) {
+        var ekMetin = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            ekMetin += event.results[i][0].transcript + ' ';
+          }
+        }
+        if (ekMetin) {
+          var mevcut = aciklamaEl.value ? aciklamaEl.value.trim() + ' ' : '';
+          aciklamaEl.value = (mevcut + ekMetin.trim()).slice(0, 500);
+        }
+      };
+
+      mikBtn.addEventListener('click', function() {
+        if (aktifMi) {
+          rec.stop();
+        } else {
+          try { rec.start(); } catch (e) {}
+        }
+      });
+    }
+  }
+})();
+</script>
+{% endblock %}

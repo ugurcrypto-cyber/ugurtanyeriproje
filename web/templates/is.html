@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block baslik %}{{ r['ad'] }}{% endblock %}
+{% block head %}{% if r['durum'] in ('kuyrukta', 'isleniyor') %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
+{% block icerik %}
+<div class="kart">
+  <h1>{{ r['ad'] }}</h1>
+  <p>Durum: <span class="rozet {{ r['durum'] }}">{{ {'kuyrukta':'Sırada','isleniyor':'İşleniyor','tamam':'Hazır','hata':'Hata','silindi':'Silindi'}.get(r['durum'], r['durum']) }}</span>
+     <span class="ince">· {{ r['olusturma'] }}</span></p>
+  {% if r['durum'] in ('kuyrukta', 'isleniyor') %}
+    <p class="ince">DXF mimari ölçüleri (DH1 / DH2 / DH3), yönlü pencereler (DPK / DPB / DPD / DPG) ve dış kapılar (DK) okunuyor; sayfa 3 saniyede bir otomatik yenilenir...</p>
+  {% endif %}
+  {% if r['mesaj'] %}<pre>{{ r['mesaj'] }}</pre>{% endif %}
+  {% if r['durum'] == 'tamam' and dosyalar %}
+    <h2>📥 Excel (.xlsm) Çıktılarını İndir</h2>
+    <div class="indir-liste">
+      {% for d in dosyalar %}
+        <a class="dugme" href="{{ url_for('indir', is_id=r['id'], sira=loop.index0) }}">⬇ {{ d }}</a>
+      {% endfor %}
+    </div>
+    <p class="ince">Dosyalar {{ SAKLAMA_GUN }} gün saklanır, sonra otomatik silinir.</p>
+  {% endif %}
+</div>
+
+{% if detay and detay.get('mahaller') %}
+<div class="kart">
+  <h2>📐 Canlı DH1 / DH2 / DH3, Yön ve Mahal Isı Kaybı Hesap Tablosu</h2>
+  <div class="ozet-izgara">
+    <div class="ozet-kutu"><span class="ince">Toplam Mahal</span><span class="deger">{{ detay['mahal_sayisi'] }}</span></div>
+    <div class="ozet-kutu"><span class="ince">Toplam DH1 (Dış Duvar)</span><span class="deger">{{ "%.2f"|format(detay['toplam_dh1']) }} m</span></div>
+    <div class="ozet-kutu"><span class="ince">Toplam DH2 (Kolon/Perde)</span><span class="deger">{{ "%.2f"|format(detay['toplam_dh2']) }} m</span></div>
+    <div class="ozet-kutu"><span class="ince">Toplam DH3 (Kiriş)</span><span class="deger">{{ "%.2f"|format(detay['toplam_dh3']) }} m</span></div>
+    <div class="ozet-kutu"><span class="ince">Toplam DO1 (İç Komşu)</span><span class="deger">{{ "%.2f"|format(detay['toplam_do1']) }} m</span></div>
+  </div>
+  <div class="tablo-sarici">
+    <table>
+      <thead>
+        <tr>
+          <th>Blok</th>
+          <th>Kod</th>
+          <th>Mahal Adı</th>
+          <th>Sıcaklık</th>
+          <th>Alan (m²)</th>
+          <th>DH1 (m)</th>
+          <th>DH2 (m)</th>
+          <th>DH3 (m)</th>
+          <th>DO1 (m)</th>
+          <th>Tavan (CA1/CA2/CA3/CC1/CC2)</th>
+          <th>Taban (TO1/TO2/TG1/TG2/TT1)</th>
+          <th>Yönlü Pencere / Kapı (DK & İK)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in detay['mahaller'] %}
+        <tr>
+          <td>{{ m['blok'] }}</td>
+          <td><strong>{{ m['code'] }}</strong></td>
+          <td>{{ m['name'] }}</td>
+          <td>{{ m['temp'] }}°C</td>
+          <td>{{ "%.2f"|format(m['area']) }}</td>
+          <td><strong>{{ "%.2f"|format(m['dh1']) }}</strong></td>
+          <td>{{ "%.2f"|format(m['dh2']) }}</td>
+          <td>{{ "%.2f"|format(m['dh3']) }}</td>
+          <td>{{ "%.2f"|format(m['do1']) }}</td>
+          <td>
+            {% if m['ceil_area'] > 0 %}{{ m['ceil_code'] }}: {{ "%.2f"|format(m['ceil_area']) }}{% else %}-{% endif %}
+            {% if m.get('ceil2_area', 0) > 0 %} + {{ m['ceil2_code'] }}: {{ "%.2f"|format(m['ceil2_area']) }}{% endif %}
+          </td>
+          <td>
+            {% if m['floor_area'] > 0 %}{{ m['floor_code'] }}: {{ "%.2f"|format(m['floor_area']) }}{% else %}-{% endif %}
+            {% if m.get('floor2_area', 0) > 0 %} + {{ m['floor2_code'] }}: {{ "%.2f"|format(m['floor2_area']) }}{% endif %}
+          </td>
+          <td>
+            {% set acikliklar = (m['wins'] + ([m['ik']] if m.get('ik') else [])) %}
+            {{ acikliklar|join(', ') if acikliklar else '-' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <details style="margin-top:18px">
+    <summary style="cursor:pointer;font-weight:600;color:#1d4ed8">⚙️ Hibrit Tavan / Taban (CA1-CA2-CC1 / TO1-TG1-TT1) ve Metraj Satır Bazlı Düzenleyici (Tıklayın)</summary>
+    <form method="post" action="{{ url_for('is_revize', is_id=r['id']) }}" style="margin-top:12px">
+      {{ csrf_input() }}
+      <p class="ince">Son kat tavanını (CA1, CA2, CC1) veya karma bina tabanını (TO1, TG1, TT1) mahal bazında alt alta / hibrit bölebilir, DH1/DH2/DH3 metrajlarına müdahale edip Excel'i anında güncelleyebilirsiniz.</p>
+      <div class="tablo-sarici">
+        <table>
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Mahal</th>
+              <th>DH1</th>
+              <th>DH2</th>
+              <th>DH3</th>
+              <th>DO1</th>
+              <th>Tavan 1</th>
+              <th>Alan 1</th>
+              <th>Tavan 2 (Hibrit)</th>
+              <th>Alan 2</th>
+              <th>Taban 1</th>
+              <th>Alan 1</th>
+              <th>Taban 2 (Karma)</th>
+              <th>Alan 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in detay['mahaller'] %}
+            {% set k = m['code'] %}
+            <tr>
+              <td><strong>{{ k }}</strong><input type="hidden" name="kod" value="{{ k }}"></td>
+              <td>{{ m['name'] }}</td>
+              <td><input type="number" step="0.01" name="dh1_{{ k }}" value="{{ m['dh1'] }}" style="width:68px"></td>
+              <td><input type="number" step="0.01" name="dh2_{{ k }}" value="{{ m['dh2'] }}" style="width:64px"></td>
+              <td><input type="number" step="0.01" name="dh3_{{ k }}" value="{{ m['dh3'] }}" style="width:68px"></td>
+              <td><input type="number" step="0.01" name="do1_{{ k }}" value="{{ m['do1'] }}" style="width:64px"></td>
+              <td>
+                <select name="ceil_code_{{ k }}" style="width:72px">
+                  {% for ck in ['CA1','CA2','CA3','CC1','CC2'] %}
+                  <option value="{{ ck }}" {{ 'selected' if m['ceil_code']==ck }}>{{ ck }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="number" step="0.01" name="ceil_area_{{ k }}" value="{{ m['ceil_area'] }}" style="width:68px"></td>
+              <td>
+                <select name="ceil2_code_{{ k }}" style="width:72px">
+                  <option value="">-</option>
+                  {% for ck in ['CA1','CA2','CA3','CC1','CC2'] %}
+                  <option value="{{ ck }}" {{ 'selected' if m.get('ceil2_code')==ck }}>{{ ck }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="number" step="0.01" name="ceil2_area_{{ k }}" value="{{ m.get('ceil2_area', 0.0) }}" style="width:64px"></td>
+              <td>
+                <select name="floor_code_{{ k }}" style="width:72px">
+                  {% for fk in ['TO1','TO2','TG1','TG2','TT1'] %}
+                  <option value="{{ fk }}" {{ 'selected' if m['floor_code']==fk }}>{{ fk }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="number" step="0.01" name="floor_area_{{ k }}" value="{{ m['floor_area'] }}" style="width:68px"></td>
+              <td>
+                <select name="floor2_code_{{ k }}" style="width:72px">
+                  <option value="">-</option>
+                  {% for fk in ['TO1','TO2','TG1','TG2','TT1'] %}
+                  <option value="{{ fk }}" {{ 'selected' if m.get('floor2_code')==fk }}>{{ fk }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="number" step="0.01" name="floor2_area_{{ k }}" value="{{ m.get('floor2_area', 0.0) }}" style="width:64px"></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:12px"><button type="submit">🔄 Değişiklikleri Uygula ve Excel'i Yeniden Üret</button></p>
+    </form>
+  </details>
+</div>
+{% endif %}
+
+<div class="kart">
+  <h2>Bina tanımı</h2>
+  <table>
+    <tr><th>Bina fonksiyonu</th><td>{{ BINA_FONKSIYONU.get(p.get('bina_fonksiyonu', 'konut'), p.get('bina_fonksiyonu', 'Konut')) }}</td></tr>
+    <tr><th>Yön referansı</th><td>{{ YON_REFERANSI.get(p.get('yon_referansi', 'yukari_kuzey'), p.get('yon_referansi', 'Yukarısı Kuzey')) }}</td></tr>
+    <tr><th>Kat sayısı</th><td>{{ p['kat_sayisi'] }}</td></tr>
+    <tr><th>Son kat tavanı</th><td>{{ UST_TAVAN.get(p['ust_tavan'], p['ust_tavan']) }}</td></tr>
+    <tr><th>Zemin kat tabanı</th><td>{{ ZEMIN_TABAN.get(p['zemin_taban'], p['zemin_taban']) }}</td></tr>
+    <tr><th>Döşeme</th><td>{{ DOSEME.get(p['doseme'], p['doseme']) }}</td></tr>
+    {% if p.get('aktif_bilesenler') %}<tr><th>Aktif Bileşenler</th><td>{{ p['aktif_bilesenler']|join(', ') }}</td></tr>{% endif %}
+    {% if p['aciklama'] %}<tr><th>Açıklama</th><td>{{ p['aciklama'] }}</td></tr>{% endif %}
+  </table>
+</div>
+<p><a href="{{ url_for('panel') }}">← Panele dön</a></p>
+{% endblock %}

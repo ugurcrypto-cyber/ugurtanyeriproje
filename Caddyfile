@@ -1,0 +1,11 @@
+www.{$ALAN_ADI:ugurtanyeriproje.com}, {$ALAN_ADI:ugurtanyeriproje.com} {
+	request_body {
+		max_size 320MB
+	}
+	encode gzip
+	reverse_proxy web:8080 {
+		transport http {
+			response_header_timeout 600s
+		}
+	}
+}

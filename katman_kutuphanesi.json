@@ -1,0 +1,187 @@
+{
+  "surum": "2.0-otonom",
+  "son_guncelleme": "2026-10-25T20:25:06",
+  "mahal_kod_katmanlari": [
+    "MAHAL NO",
+    "MAHAL_NO",
+    "MAHAL-NO",
+    "MAHALNO"
+  ],
+  "mahal_metin_katmanlari": [
+    "MİMARİ",
+    "MIMARI",
+    "Mimari",
+    "mahal",
+    "MAHAL",
+    "M-MAHAL",
+    "A-AREA",
+    "Model Birimi - Mahal",
+    "Annotation - Text",
+    "+Detay - Yazı - 2",
+    "+Detay - Yazı - 1",
+    "+Detay - Yazı - 3",
+    "+Detay - Yazı - 5",
+    "Yazi",
+    "yazı",
+    "YAZI",
+    "0",
+    "MAHAL YAZI",
+    "ODA",
+    "ALAN",
+    "2D Drafting - General"
+  ],
+  "olcu_ic_katmanlari": [
+    "N-İÇ ÖLÇÜ yatay",
+    "N-İÇ ÖLÇÜ dikey",
+    "+Detay - Ölçü - İç",
+    "Dimensioning - General",
+    "ÖLÇÜ",
+    "OLCU",
+    "İÇ ÖLÇÜ",
+    "IC OLCU",
+    "DIM",
+    "MİMARİ",
+    "+Detay - Yazı - 1",
+    "Dış Duvarlar",
+    "A-Dimension_100"
+  ],
+  "olcu_dis_katmanlari": [
+    "DIŞ ÖLÇÜ",
+    "+Detay - Ölçü - Dış",
+    "+Detay - Ölçü - İç Ortak Alan"
+  ],
+  "duvar_dis_katmanlari": [
+    "Dış Duvarlar",
+    "Exterior walls",
+    "+Detay - Duvar - 1",
+    "DIŞ DUVAR",
+    "DIS DUVAR"
+  ],
+  "duvar_ic_katmanlari": [
+    "MİMARİ",
+    "MIMARI",
+    "Mimari",
+    "duvar",
+    "DUVAR",
+    "Yapısal - Birleşik",
+    "+Detay - Duvar - 2",
+    "0",
+    "+Detay - Duvar - 1",
+    "+Detay - Duvar - 3"
+  ],
+  "kolon_katmanlari": [
+    "+Detay - Betonarme - Kolonlar",
+    "Yapısal - Taşıyıcı",
+    "KOLON",
+    "PERDE",
+    "BETONARME",
+    "+Detay - Betonarme - Perdeler",
+    "+Detay - Betonarme - Kirişler",
+    "N-BETONARME"
+  ],
+  "pencere_kapi_katmanlari": [
+    "Dış Duvarlar",
+    "Mimari",
+    "MİMARİ",
+    "MIMARI",
+    "0",
+    "+Detay - Yazı - 1",
+    "+Detay - Yazı - 2",
+    "Exterior walls"
+  ],
+  "mimar_profilleri": {
+    "2D Drafting - General|2D Çizim - Genel|ADAAYRIM|Annotation - Text|Dimensioning - General|Döşeme": {
+      "ilk_gorulme": "2026-10-25T19:43:08",
+      "ornek_dosya": "01_12911-11_YAHYA_DINLER.dxf",
+      "olcu_tipi": "patlatilmis_metin",
+      "baskin_oda_katmani": "Model Birimi - Mahal",
+      "baskin_alan_katmani": "Model Birimi - Mahal",
+      "katman_sayisi": 22,
+      "proje_sayisi": 7,
+      "son_gorulme": "2026-10-25T20:25:05"
+    },
+    "A-Isıtma Borulama|A-Radyator|CP_UCSSPEC|MAHAL NO|Mimari|RADYATOR": {
+      "ilk_gorulme": "2026-10-25T19:43:08",
+      "ornek_dosya": "02_KT_-_Yahya_Dinler.dxf",
+      "olcu_tipi": "patlatilmis_metin",
+      "baskin_oda_katmani": "Mimari",
+      "baskin_alan_katmani": "Mimari",
+      "katman_sayisi": 12,
+      "proje_sayisi": 9,
+      "son_gorulme": "2026-10-25T20:25:06"
+    }
+  },
+  "kesif_gecmisi": [
+    {
+      "tarih": "2026-10-25T15:26:21",
+      "kaynak": "02_Kalorifer_Tessiat.dxf",
+      "yeni_katmanlar": {
+        "olcu_ic_katmanlari": [
+          "MİMARİ"
+        ]
+      }
+    },
+    {
+      "tarih": "2026-10-25T15:26:35",
+      "kaynak": "01_11737_-_3_Sumru_Ornek_ve_Hiss._v.3_Odabas_Insaat_-_Hamitler.dxf",
+      "yeni_katmanlar": {
+        "olcu_ic_katmanlari": [
+          "+Detay - Yazı - 1"
+        ],
+        "duvar_ic_katmanlari": [
+          "+Detay - Duvar - 1",
+          "+Detay - Duvar - 3"
+        ],
+        "kolon_katmanlari": [
+          "+Detay - Betonarme - Perdeler",
+          "+Detay - Betonarme - Kirişler"
+        ]
+      }
+    },
+    {
+      "tarih": "2026-10-25T15:27:09",
+      "kaynak": "01_12911-11_YAHYA_DINLER.dxf",
+      "yeni_katmanlar": {
+        "mahal_metin_katmanlari": [
+          "2D Drafting - General"
+        ],
+        "olcu_ic_katmanlari": [
+          "Dış Duvarlar"
+        ],
+        "pencere_kapi_katmanlari": [
+          "Exterior walls"
+        ]
+      }
+    },
+    {
+      "tarih": "2026-10-25T15:29:56",
+      "kaynak": "mimari.dxf",
+      "yeni_katmanlar": {
+        "olcu_ic_katmanlari": [
+          "A-Dimension_100"
+        ],
+        "kolon_katmanlari": [
+          "N-BETONARME"
+        ]
+      }
+    },
+    {
+      "tarih": "2026-10-25T19:43:08",
+      "kaynak": "01_12911-11_YAHYA_DINLER.dxf",
+      "yeni_katmanlar": {
+        "mimar_profili": [
+          "2D Drafting - General|2D Çizim - Genel|ADAAYRIM|Annotation - Text|Dimensioning - General|Döşeme"
+        ]
+      }
+    },
+    {
+      "tarih": "2026-10-25T19:43:08",
+      "kaynak": "02_KT_-_Yahya_Dinler.dxf",
+      "yeni_katmanlar": {
+        "mimar_profili": [
+          "A-Isıtma Borulama|A-Radyator|CP_UCSSPEC|MAHAL NO|Mimari|RADYATOR"
+        ]
+      }
+    }
+  ]
+}

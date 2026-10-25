@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block baslik %}Giriş{% endblock %}
+{% block icerik %}
+<div class="kart" style="max-width:420px;margin:0 auto">
+  <h1>Giriş yap</h1>
+  <form method="post" action="{{ url_for('giris') }}">{{ csrf_input() }}
+    <label for="eposta">E-posta</label><input id="eposta" type="email" name="eposta" required autofocus>
+    <label for="sifre">Şifre</label><input id="sifre" type="password" name="sifre" required>
+    <p><button type="submit">Giriş</button></p>
+  </form>
+  <p class="ince">Hesabınız yok mu? <a href="{{ url_for('kayit') }}">Üye olun</a>.</p>
+</div>
+{% endblock %}
